@@ -46,7 +46,7 @@ def welcome():
         f"Hawaii Climate Analysis and Exploration Routes:<br/><br/>"
         f"/api/v1.0/precipitation<br/>Dictionary of date and precipitation<br/><br/>"
         f"/api/v1.0/stations<br/>List of the weather stations<br/><br/>"
-        f"/api/v1.0/tobs<br/>List of tobs of the most active station for the last year of the data<br/><br/>"
+        f"/api/v1.0/tobs<br/>Dictionary of date and tobs of the most active station for the last year of the data<br/><br/>"
         f"/api/v1.0/<start_date_only><br/>Min, max, avg tobs for all dates greater than and equal to the start date.<br/><br/>"
         f"/api/v1.0/<start_date>/<end_date><br/>Min, max, avg tobs for dates between the start and end date inclusive.<br/><br/>"
     )
@@ -80,17 +80,14 @@ def stations ():
     session = Session(engine)
 
     # Query the station name
-    result = session.query(Station.station, Station.name).all()
+    result = session.query(Station.station).all()
 
     session.close()
 
     #create a list of stations
     station_list = []
-    for station, name in result:
-        station_dict = {}
-        station_dict['station'] = station
-        station_dict['name'] = name
-        station_list.append(station_dict)
+    for station in result:
+        station_list.append(station)
 
     #Return a JSON list of stations from the dataset
     return jsonify(station_list)
@@ -123,14 +120,15 @@ def StartDate(start_date_only):
      # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    Results = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs),func.avg(Measurement.tobs)).filter(Measurement.date >= start_date_only).all()
+    Results = session.query(Measurement.date, func.min(Measurement.tobs), func.max(Measurement.tobs),func.avg(Measurement.tobs)).filter(Measurement.date >= start_date_only).group_by(Measurement.date).all()
 
     session.close()
 
     #Return JSON list of max, min, avg tobs
     start_list = []
-    for tmin,tmax,tavg in Results:
+    for date,tmin,tmax,tavg in Results:
         start_dict = {}
+        start_dict['Date'] = date
         start_dict['TMIN'] = tmin
         start_dict['TMAX'] = tmax
         start_dict['TAVG'] = tavg
@@ -143,14 +141,15 @@ def StartDateEndDate(start_date,end_date):
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    Resultss = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs),func.avg(Measurement.tobs)).filter(Measurement.date >= start_date).filter(Measurement.date<=end_date).all()
+    Resultss = session.query(Measurement.date, func.min(Measurement.tobs), func.max(Measurement.tobs),func.avg(Measurement.tobs)).filter(Measurement.date >= start_date).filter(Measurement.date<=end_date).group_by(Measurement.date).all()
 
     session.close()
 
     #Return JSON list of max, min, avg tobs
     startend_list = []
-    for Tmin,Tmax,Tavg in Resultss:
+    for date,Tmin,Tmax,Tavg in Resultss:
         startend_dict = {}
+        startend_dict['Date'] = date
         startend_dict['TMIN'] = Tmin
         startend_dict['TMAX'] = Tmax
         startend_dict['TAVG'] = Tavg
