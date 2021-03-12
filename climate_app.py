@@ -1,4 +1,4 @@
-#import the deoendencies
+#import the dependencies
 import numpy as np
 
 import datetime as dt
@@ -159,3 +159,4 @@ def StartDateEndDate(start_date,end_date):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
