@@ -1,4 +1,4 @@
-# sqlalchemy-challenge
+# sqlalchemy-climate-analysis-exploration
 
 Use Python and SQLALchemy to analyze and explore climate database
 
